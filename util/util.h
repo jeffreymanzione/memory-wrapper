@@ -17,9 +17,6 @@
  */
 typedef uint32_t (*Hasher)(const void *);
 typedef int32_t (*Comparator)(const void *, const void *);
-typedef void *(*Alloc)(int elt_size, int count, const char name[]);
-typedef void (*Dealloc)(void *ptr);
-typedef void (*Action)(void *ptr);
 
 uint32_t default_hasher(const void *ptr);
 int32_t default_comparator(const void *ptr1, const void *ptr2);

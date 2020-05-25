@@ -8,5 +8,4 @@ cc_library(
     name = "error",
     srcs = ["error.c"],
     hdrs = ["error.h"],
-    includes = ["//:std_libs"],
 )

@@ -50,12 +50,15 @@ void map_init(Map *map, uint32_t size, Hasher hasher, Comparator comparator,
   map->num_entries = 0;
 }
 
-void map_finalize(Map *map) { map->dealloc(map->table); }
+void map_finalize(Map *map) {
+  ASSERT(NOT_NULL(map), NOT_NULL(map->dealloc), NOT_NULL(map->table));
+  map->dealloc((void **)&map->table);
+}
 
 void map_delete(Map *map) {
-  ASSERT_NOT_NULL(map);
+  ASSERT(NOT_NULL(map));
   map_finalize(map);
-  map->dealloc(map);
+  map->dealloc((void **)&map);
 }
 
 bool _map_insert_helper(Map *map, const void *key, const void *value,
@@ -213,7 +216,7 @@ uint32_t map_size(const Map *map) { return map->num_entries; }
 void _resize_table(Map *map) {
   ASSERT(NOT_NULL(map));
   int new_table_sz = calculate_new_size(map->table_sz);
-  _Entry *new_table = alloc(sizeof(_Entry), new_table_sz);
+  _Entry *new_table = map->alloc(sizeof(_Entry), new_table_sz, "_Entry");
   _Entry *new_first = NULL;
   _Entry *new_last = NULL;
 
@@ -223,7 +226,7 @@ void _resize_table(Map *map) {
   }
   _map_iterate_internal(map, insert_in_new_table);
 
-  map->dealloc(map->table);
+  map->dealloc((void **)&map->table);
   map->table = new_table;
   map->table_sz = new_table_sz;
   map->first = new_first;

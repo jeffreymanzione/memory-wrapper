@@ -35,7 +35,7 @@ void set_finalize(Set *set) {
 void set_delete(Set *set) {
   ASSERT_NOT_NULL(set);
   set_finalize(set);
-  set->map.dealloc(set);
+  set->map.dealloc((void **)&set);
 }
 
 bool set_insert(Set *set, const void *ptr) {

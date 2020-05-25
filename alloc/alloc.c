@@ -1,5 +1,5 @@
 /*
- * memory.c
+ * alloc.c
  *
  *  Created on: Sep 28, 2016
  *      Author: Jeff
@@ -16,6 +16,7 @@
 #include "error/error.h"
 #include "struct/set.h"
 
+// Relevant information related to an allocation/reallocation event.
 typedef struct {
   uint32_t elt_size;
   uint32_t count;
@@ -23,33 +24,55 @@ typedef struct {
   char *type_name;
   char *func;
   char *file;
-} AllocInfo;
+} _AllocInfo;
 
-static bool is_verbose = false;
-static Set *in_mem = NULL;
-static volatile bool alloc_busy = false;
+// Whether memory allocation events should be outputted to stdout.
+static bool _is_verbose = false;
+// Stores pointers to allocated memory.
+static Set *_in_mem = NULL;
+// Avoid self-initialized memory allocation within Set.
+static volatile bool _alloc_busy = false;
+// True if inited.
+static volatile bool _is_inited = false;
 
-void alloc_init() {
-  alloc_busy = true;
-  ASSERT_NULL(in_mem);
-  in_mem = set_create(32781, default_hasher, default_comparator, calloc, free);
-  alloc_busy = false;
+// Wraps calloc to match the Alloc typedef.
+void *_calloc(size_t count, size_t size, const char type[]) {
+  return calloc(count, size);
 }
 
-AllocInfo alloc_info(uint32_t elt_size, uint32_t count, uint32_t line,
-                     const char type_name[], const char func[],
-                     const char file[]) {
-  AllocInfo info = {.elt_size = elt_size,
-                    .count = count,
-                    .line = line,
-                    .type_name = strdup(type_name),
-                    .func = strdup(func),
-                    .file = strdup(file)};
+// Wraps free to match the Dealloc typedef.
+void _free(void **ptr) {
+  if (NULL == ptr) {
+    return;
+  }
+  free(*ptr);
+}
+
+void alloc_init() {
+  _alloc_busy = true;
+  ASSERT_NULL(_in_mem);
+  _in_mem =
+      set_create(32781, default_hasher, default_comparator, _calloc, _free);
+  _alloc_busy = false;
+  _is_inited = true;
+}
+
+bool alloc_ready() { return _is_inited; }
+
+_AllocInfo _alloc_info(uint32_t elt_size, uint32_t count, uint32_t line,
+                       const char type_name[], const char func[],
+                       const char file[]) {
+  _AllocInfo info = {.elt_size = elt_size,
+                     .count = count,
+                     .line = line,
+                     .type_name = strdup(type_name),
+                     .func = strdup(func),
+                     .file = strdup(file)};
   return info;
 }
 
-void alloc_info_delete(AllocInfo *info, uint32_t line, const char func[],
-                       const char file[]) {
+void _alloc_info_delete(_AllocInfo *info, uint32_t line, const char func[],
+                        const char file[]) {
   if (NULL == info || NULL == info->type_name || NULL == info->file) {
     error(line, func, file, "Memory management error.");
   }
@@ -60,59 +83,60 @@ void alloc_info_delete(AllocInfo *info, uint32_t line, const char func[],
   free(info->func);
 }
 
-int alloc_info_size() {
-  return ((int)ceil(((float)sizeof(AllocInfo)) / 8)) * 8;
+int _alloc_info_size() {
+  return ((int)ceil(((float)sizeof(_AllocInfo)) / 8)) * 8;
 }
 
 void alloc_finalize() {
-  volatile bool alloc_val = alloc_busy;
-  alloc_busy = true;
-  ASSERT_NOT_NULL(in_mem);
+  volatile bool alloc_val = _alloc_busy;
+  _alloc_busy = true;
+  ASSERT_NOT_NULL(_in_mem);
   void embarrass_me(void *ptr) {
     ASSERT_NOT_NULL(ptr);
-    AllocInfo *info = (AllocInfo *)(ptr - alloc_info_size());
+    _AllocInfo *info = (_AllocInfo *)(ptr - _alloc_info_size());
     fprintf(stderr, "Forgot to free %p(%sx%d) allocated at %s:%d in %s(...)\n",
             ptr, info->type_name, info->count, info->file, info->line,
             info->func);
     fflush(stderr);
     DEALLOC(ptr);
+    _is_inited = false;
   }
-  set_iterate(in_mem, embarrass_me);
-  set_delete(in_mem);
-  alloc_busy = alloc_val;
+  set_iterate(_in_mem, embarrass_me);
+  set_delete(_in_mem);
+  _alloc_busy = alloc_val;
 }
 
-void alloc_register(void *ptr, uint32_t elt_size, uint32_t count, uint32_t line,
-                    const char func[], const char file[],
-                    const char type_name[]) {
-  if (!alloc_busy) {
-    alloc_busy = true;
-    if (!set_insert(in_mem, ptr)) {
+void _alloc_register(void *ptr, uint32_t elt_size, uint32_t count,
+                     uint32_t line, const char func[], const char file[],
+                     const char type_name[]) {
+  if (!_alloc_busy) {
+    _alloc_busy = true;
+    if (!set_insert(_in_mem, ptr)) {
       error(line, func, file,
             "Attempting to allocate %p(%sx%d), but it is already allocated.\n",
             ptr, type_name, count);
     }
-    alloc_busy = false;
+    _alloc_busy = false;
   }
 }
 
-void alloc_unregister(void *ptr, uint32_t line, const char func[],
-                      const char file[]) {
-  if (!alloc_busy) {
-    alloc_busy = true;
-    if (!set_remove(in_mem, ptr)) {
+void _alloc_unregister(void *ptr, uint32_t line, const char func[],
+                       const char file[]) {
+  if (!_alloc_busy) {
+    _alloc_busy = true;
+    if (!set_remove(_in_mem, ptr)) {
       error(line, func, file,
             "Attempting to free %p, but it is not allocated.\n", ptr);
     }
-    alloc_busy = false;
+    _alloc_busy = false;
   }
 }
 
-void alloc_set_verbose(bool verbose) { is_verbose = verbose; }
+void alloc_set_verbose(bool verbose) { _is_verbose = verbose; }
 
-void log_alloc(uint32_t line, const char func[], const char file[],
-               char format[], ...) {
-  if (is_verbose) {
+void _log_alloc(uint32_t line, const char func[], const char file[],
+                char format[], ...) {
+  if (_is_verbose) {
     va_list args;
     va_start(args, format);
     fprintf(stdout, "At %s:%d in %s(...):\t", file, line, func);
@@ -123,6 +147,7 @@ void log_alloc(uint32_t line, const char func[], const char file[],
   }
 }
 
+// Allocates a new block of memory and registers it.
 void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
               const char func[], const char file[], const char type_name[]) {
   if (0 == elt_size || 0 == count) {
@@ -130,84 +155,67 @@ void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
           "Either allocated array is of 0 elements or it is"
           " an array of type sizeof(0).");
   }
-  int info_space = alloc_info_size();
-
+  int info_space = _alloc_info_size();
   void *info_ptr = calloc(1, info_space + count * elt_size);
   ASSERT(NOT_NULL(info_ptr));
-
-  *((AllocInfo *)info_ptr) =
-      alloc_info(elt_size, count, line, type_name, func, file);
-
+  *((_AllocInfo *)info_ptr) =
+      _alloc_info(elt_size, count, line, type_name, func, file);
   if (NULL == info_ptr) {
     error(line, func, file, "Failed to allocate memory.");
   }
   void *ptr = info_ptr + info_space;
-
-  alloc_register(ptr, elt_size, count, line, func, file, type_name);
-  log_alloc(line, func, file, "Allocated a %s[%d] at %p", type_name, count,
-            ptr);
+  _alloc_register(ptr, elt_size, count, line, func, file, type_name);
+  _log_alloc(line, func, file, "Allocated a %s[%d] at %p", type_name, count,
+             ptr);
   return ptr;
 }
 
+// Moves memory to a new location and re-registers it.
 void *__realloc(void *ptr, uint32_t elt_size, uint32_t count, uint32_t line,
                 const char func[], const char file[]) {
   if (NULL == ptr) {
     error(line, func, file, "Pointer argument was null.");
   }
-
   int new_size = elt_size * count;
-
   if (0 == new_size) {
     error(line, func, file, "Tried to realloc to an empty array.");
   }
-
-  int info_space = alloc_info_size();
+  int info_space = _alloc_info_size();
   void *info_ptr = ptr - info_space;
-
-  AllocInfo old_info = *((AllocInfo *)(ptr - info_space));
+  _AllocInfo old_info = *((_AllocInfo *)(ptr - info_space));
   int old_size = old_info.elt_size * old_info.count;
-
   void *new_info_ptr = realloc(info_ptr, info_space + new_size);
-
   if (NULL == new_info_ptr) {
     error(line, func, file, "Failed to reallocate memory.");
   }
-
-  *((AllocInfo *)new_info_ptr) =
-      alloc_info(elt_size, count, line, old_info.type_name, func, file);
-
+  *((_AllocInfo *)new_info_ptr) =
+      _alloc_info(elt_size, count, line, old_info.type_name, func, file);
   void *new_ptr = new_info_ptr + info_space;
-
   if (new_size > old_size) {
     size_t diff = new_size - old_size;
     void *start = ((char *)new_ptr) + old_size;
     memset(start, 0, diff);
   }
-
-  alloc_info_delete(&old_info, line, func, file);
-
-  alloc_unregister(ptr, line, func, file);
-  alloc_register(new_ptr, elt_size, count, line, func, file,
-                 ((AllocInfo *)new_info_ptr)->type_name);
-  log_alloc(line, func, file, "Reallocated memory from %p to %p.", ptr,
-            new_ptr);
+  _alloc_info_delete(&old_info, line, func, file);
+  _alloc_unregister(ptr, line, func, file);
+  _alloc_register(new_ptr, elt_size, count, line, func, file,
+                  ((_AllocInfo *)new_info_ptr)->type_name);
+  _log_alloc(line, func, file, "Reallocated memory from %p to %p.", ptr,
+             new_ptr);
   return new_ptr;
 }
 
+// Deletes any memory associated with the given pointer and unregisters it.
 void __dealloc(void **ptr, uint32_t line, const char func[],
                const char file[]) {
   if (NULL == ptr || NULL == *ptr) {
     error(line, func, file, "Pointer argument was null.");
   }
-
-  int info_space = alloc_info_size();
+  int info_space = _alloc_info_size();
   void *info_ptr = *ptr - info_space;
-
-  alloc_info_delete((AllocInfo *)info_ptr, line, func, file);
+  _alloc_info_delete((_AllocInfo *)info_ptr, line, func, file);
   free(info_ptr);
-
-  alloc_unregister(*ptr, line, func, file);
-
-  log_alloc(line, func, file, "Deallocated memory from %p", *ptr);
+  _alloc_unregister(*ptr, line, func, file);
+  _log_alloc(line, func, file, "Deallocated memory from %p", *ptr);
   *ptr = NULL;
 }
