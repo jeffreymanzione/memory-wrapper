@@ -15,8 +15,8 @@ int LINE_NUM__ = 0;
 const char *FUNC_NAME__ = NULL;
 const char *FILE_NAME__ = NULL;
 
-void error(int line_num, const char func_name[], const char file_name[],
-           const char fmt[], ...) {
+void __error(int line_num, const char func_name[], const char file_name[],
+             const char fmt[], ...) {
   va_list args;
   va_start(args, fmt);
   fprintf(stderr, "Error in file(%s) in function(%s) at line(%d): ", file_name,
@@ -28,9 +28,9 @@ void error(int line_num, const char func_name[], const char file_name[],
   exit(1);
 }
 
-void error_nest(int line_num, const char func_name[], const char file_name[],
-                int nested_line_num, const char nested_func_name[],
-                const char nested_file_name[], const char fmt[], ...) {
+void __error_nest(int line_num, const char func_name[], const char file_name[],
+                  int nested_line_num, const char nested_func_name[],
+                  const char nested_file_name[], const char fmt[], ...) {
   va_list args;
   va_start(args, fmt);
   fprintf(stderr,
@@ -45,8 +45,8 @@ void error_nest(int line_num, const char func_name[], const char file_name[],
   exit(1);
 }
 
-void debugf(int line_num, const char func_name[], const char file_name[],
-            const char fmt[], ...) {
+void __debugf(int line_num, const char func_name[], const char file_name[],
+              const char fmt[], ...) {
   va_list args;
   va_start(args, fmt);
   fprintf(stdout, "[D] %s:%d(%s): ", file_name, line_num, func_name);
