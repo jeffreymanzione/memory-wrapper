@@ -1,3 +1,8 @@
+// struct_defaults.c
+//
+// Created on: Feb 6, 2018
+//     Author: Jeff Manzione
+
 #include "struct/struct_defaults.h"
 
 #include <stdint.h>

@@ -10,7 +10,7 @@ cc_library(
     hdrs = ["alloc.h"],
     includes = ["C:\\msys64\\mingw64\206_64-w64-mingw32\\include"],
     deps = [
-        "//error",
+        "//debug",
         "//struct:set",
     ],
 )

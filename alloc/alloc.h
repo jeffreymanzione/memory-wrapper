@@ -1,9 +1,7 @@
-/*
- * alloc.h
- *
- *  Created on: Sep 28, 2016
- *      Author: Jeff
- */
+// alloc.h
+//
+// Created on: Sep 28, 2016
+//     Author: Jeff Manzione
 
 #ifndef ALLOC_ALLOC_H_
 #define ALLOC_ALLOC_H_

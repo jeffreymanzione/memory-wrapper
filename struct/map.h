@@ -1,9 +1,7 @@
-/*
- * map.h
- *
- *  Created on: Jul 7, 2016
- *      Author: Jeff
- */
+// map.h
+//
+// Created on: Jul 7, 2016
+//     Author: Jeff Manzione
 
 #ifndef MAP_H_
 #define MAP_H_

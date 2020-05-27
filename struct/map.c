@@ -1,16 +1,14 @@
-/*
- * set2.c
- *
- *  Created on: Feb 5, 2018
- *      Author: Jeff
- */
+// map.c
+//
+// Created on: Feb 5, 2018
+//     Author: Jeff Manzione
 
 #include "struct/map.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "error/error.h"
+#include "debug/debug.h"
 #include "util/util.h"
 
 struct __Entry {

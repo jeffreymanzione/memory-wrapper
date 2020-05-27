@@ -1,9 +1,7 @@
-/*
- * set2.c
- *
- *  Created on: Feb 6, 2018
- *      Author: Jeff
- */
+// set.c
+//
+// Created on: Feb 6, 2018
+//     Author: Jeff Manzione
 
 #include "struct/set.h"
 
@@ -11,7 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "error/error.h"
+#include "debug/debug.h"
 #include "struct/map.h"
 #include "util/util.h"
 

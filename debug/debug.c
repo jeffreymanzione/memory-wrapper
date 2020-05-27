@@ -1,16 +1,15 @@
-/*
- * error.c
- *
- *  Created on: Sep 28, 2016
- *      Author: Jeff
- */
+// debug.c
+//
+// Created on: Sep 28, 2016
+//     Author: Jeff Manzione
 
-#include "error/error.h"
+#include "debug/debug.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+// Global values for debug functions.
 bool NEST_DEBUG__ = false;
 int LINE_NUM__ = 0;
 const char *FUNC_NAME__ = NULL;

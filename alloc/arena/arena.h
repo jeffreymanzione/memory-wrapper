@@ -7,6 +7,8 @@
 // blocks of memory to take advantage of freeing all of the memory instantly
 // when out of that context.
 //
+// See: https://en.wikipedia.org/wiki/Region-based_memory_management
+//
 // ARENA_DEFINE(MyType);
 // void fn() {
 //   ARENA_INIT(MyType);
@@ -20,9 +22,6 @@
 #define ALLOC_ARENA_ARENA_H_
 
 #include <stddef.h>
-#ifdef DEBUG
-#include <stdint.h>
-#endif
 
 // Declares an arena for the given type.
 //
@@ -95,10 +94,6 @@ typedef struct {
   size_t alloc_sz;
   void *next, *end;
   void *last_freed;
-#ifdef DEBUG
-  uint32_t requests, removes;
-#endif
-
 } __Arena;
 
 // Do not call these function directly.

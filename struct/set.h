@@ -1,9 +1,7 @@
-/*
- * set.h
- *
- *  Created on: Jul 6, 2016
- *      Author: Jeff
- */
+// set.h
+//
+// Created on: Jul 6, 2016
+//     Author: Jeff Manzione
 
 #ifndef STRUCT_SET_H_
 #define STRUCT_SET_H_

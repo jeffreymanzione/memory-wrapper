@@ -5,7 +5,7 @@ package(
 )
 
 cc_library(
-    name = "error",
-    srcs = ["error.c"],
-    hdrs = ["error.h"],
+    name = "debug",
+    srcs = ["debug.c"],
+    hdrs = ["debug.h"],
 )

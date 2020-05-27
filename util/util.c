@@ -1,9 +1,7 @@
-/*
- * shared.c
- *
- *  Created on: Jun 17, 2017
- *      Author: Jeff
- */
+// util.c
+//
+// Created on: Jun 17, 2017
+//     Author: Jeff Manzione
 
 #include "util/util.h"
 
@@ -11,9 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
 #define FNV_32_PRIME (0x01000193)
 #define FNV_1A_32_OFFSET (0x811C9DC5)
 
+// Is true if any bytes in the provided 32-bit integer are equivalent to 0x00.
 #define HAS_NULL(x)                                      \
   (((x & 0x000000FF) == 0) || ((x & 0x0000FF00) == 0) || \
    ((x & 0x00FF0000) == 0) || ((x & 0xFF000000) == 0))
@@ -58,6 +58,7 @@ int32_t string_comparator(const void *ptr1, const void *ptr2) {
   uint32_t *rhs = (uint32_t *)ptr2;
 
   while (!HAS_NULL(*lhs) && !HAS_NULL(*rhs)) {
+    // Longer strings will yeild positive #.
     uint32_t diff = *lhs - *rhs;
     if (diff) {
       return diff;

@@ -10,7 +10,7 @@ cc_library(
     hdrs = ["arena.h"],
     deps = [
         "//alloc",
-        "//error",
+        "//debug",
     ],
 )
 
@@ -20,7 +20,7 @@ cc_library(
     hdrs = ["intern.h"],
     deps = [
         "//alloc",
-        "//error",
+        "//debug",
         "//struct:set",
         "//util",
     ],

@@ -9,7 +9,7 @@ cc_library(
     srcs = ["map.c"],
     hdrs = ["map.h"],
     deps = [
-        "//error",
+        "//debug",
         "//util",
     ],
 )
@@ -20,7 +20,7 @@ cc_library(
     hdrs = ["set.h"],
     deps = [
         ":map",
-        "//error",
+        "//debug",
         "//util",
     ],
 )

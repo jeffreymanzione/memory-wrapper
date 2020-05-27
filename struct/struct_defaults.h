@@ -1,3 +1,8 @@
+// struct_defaults.h
+//
+// Created on: Jul 6, 2016
+//     Author: Jeff Manzione
+
 #ifndef STRUCT_STRUCT_DEFAULTS_H_
 #define STRUCT_STRUCT_DEFAULTS_H_
 

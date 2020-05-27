@@ -1,9 +1,7 @@
-/*
- * intern.c
- *
- *  Created on: Feb 11, 2018
- *      Author: Jeff
- */
+// intern.c
+//
+// Created on: Feb 11, 2018
+//     Author: Jeff Manzione
 
 #include "alloc/arena/intern.h"
 
@@ -12,7 +10,7 @@
 #include <string.h>
 
 #include "alloc/alloc.h"
-#include "error/error.h"
+#include "debug/debug.h"
 #include "struct/set.h"
 #include "util/util.h"
 

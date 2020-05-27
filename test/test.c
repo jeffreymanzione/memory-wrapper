@@ -64,8 +64,9 @@ int main(int argc, const char *argv[]) {
   printf("%s=%d\n", "ghi", *((int *)set_lookup(set, &ghi)));
   set_delete(set);
 
-  char *str = intern("Hello, world!\n");
-  printf("%s", str);
+  char *str1 = intern("Hello, world!");
+  char *str2 = intern("Hello, world!");
+  printf("%p %p %p %d\n", "Hello, world!", str1, str2, str1 == str2);
 
   ARENA_FINALIZE(TestStruct);
 

@@ -1,9 +1,7 @@
-/*
- * alloc.c
- *
- *  Created on: Sep 28, 2016
- *      Author: Jeff
- */
+// alloc.c
+//
+// Created on: Sep 28, 2016
+//     Author: Jeff Manzione
 
 #include "alloc/alloc.h"
 
@@ -13,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "error/error.h"
+#include "debug/debug.h"
 #include "struct/set.h"
 
 // Relevant information related to an allocation/reallocation event.
