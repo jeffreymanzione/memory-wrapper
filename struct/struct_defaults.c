@@ -21,6 +21,11 @@ Map *map_create_default() {
                     __calloc_fn, __free_fn);
 }
 
+void map_init_custom_comparator(Map *map, size_t size, Hasher hash,
+                                Comparator comp) {
+  map_init(map, DEFAULT_TABLE_SZ, hash, comp, __calloc_fn, __free_fn);
+}
+
 Set *set_create_default() {
   return set_create(DEFAULT_TABLE_SZ, default_hasher, default_comparator,
                     __calloc_fn, __free_fn);
@@ -29,6 +34,16 @@ Set *set_create_default() {
 void set_init_default(Set *set) {
   set_init(set, DEFAULT_TABLE_SZ, default_hasher, default_comparator,
            __calloc_fn, __free_fn);
+}
+
+void set_init_sz(Set *set, size_t size) {
+  set_init(set, size, default_hasher, default_comparator, __calloc_fn,
+           __free_fn);
+}
+
+void set_init_custom_comparator(Set *set, size_t size, Hasher hash,
+                                Comparator comp) {
+  set_init(set, DEFAULT_TABLE_SZ, hash, comp, __calloc_fn, __free_fn);
 }
 
 #ifdef DEBUG_MEMORY
