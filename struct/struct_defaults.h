@@ -29,6 +29,10 @@ void map_init_default(Map *map);
 //   Map *map = map_create_default();
 Map *map_create_default();
 
+// Similar to above, but allos a customer hasher and comparator to be provided.
+void map_init_custom_comparator(Map *map, size_t size, Hasher hash,
+                                Comparator comp);
+
 // Initializes a Set and allocates the internal memory for it with the default
 // setup.
 //
@@ -48,6 +52,13 @@ void set_init_default(Set *set);
 // Usage:
 //   Set *set = set_create_default();
 Set *set_create_default();
+
+// Creates default set with specified table size.
+void set_init_sz(Set *set, size_t size);
+
+// Similar to above, but allos a customer hasher and comparator to be provided.
+void set_init_custom_comparator(Set *set, size_t size, Hasher hash,
+                                Comparator comp);
 
 // Functions that can be used to satisfy Alloc and Dealloc interfaces where
 // ALLOC() and DEALLOC() are not possible.
