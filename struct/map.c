@@ -214,7 +214,6 @@ void _resize_table(Map *map) {
   _Entry *new_last = NULL;
 
   M_iter iter = map_iter(map);
-  _Entry *me;
   for (; has(&iter); inc(&iter)) {
     _Entry *me = iter.__entry;
     _map_insert_helper(map, me->pair.key, me->pair.value, me->hash_value,

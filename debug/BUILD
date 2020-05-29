@@ -8,6 +8,4 @@ cc_library(
     name = "debug",
     srcs = ["debug.c"],
     hdrs = ["debug.h"],
-    textual_hdrs = ["debug.h"],
-    alwayslink = True,
 )
