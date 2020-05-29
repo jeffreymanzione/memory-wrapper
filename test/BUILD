@@ -7,6 +7,7 @@ cc_binary(
         "//alloc",
         "//alloc/arena",
         "//alloc/arena:intern",
+        "//debug",
         "//struct:map",
         "//struct:set",
         "//struct:struct_defaults",

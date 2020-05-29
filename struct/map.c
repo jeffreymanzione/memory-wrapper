@@ -196,17 +196,12 @@ void *map_lookup(const Map *map, const void *key) {
   return me->pair.value;
 }
 
-void _map_iterate_internal(const Map *map, EntryAction action) {
-  _Entry *me;
-  for (me = map->first; NULL != me; me = me->next) {
-    action(me);
-  }
-}
-
 void map_iterate(const Map *map, PairAction action) {
   ASSERT(NOT_NULL(map));
-  void pair_action(_Entry * me) { action(&me->pair); }
-  _map_iterate_internal(map, pair_action);
+  M_iter iter = map_iter((Map *)map);
+  for (; has(&iter); inc(&iter)) {
+    action(&iter.__entry->pair);
+  }
 }
 
 uint32_t map_size(const Map *map) { return map->num_entries; }
@@ -218,11 +213,13 @@ void _resize_table(Map *map) {
   _Entry *new_first = NULL;
   _Entry *new_last = NULL;
 
-  void insert_in_new_table(_Entry * me) {
+  M_iter iter = map_iter(map);
+  _Entry *me;
+  for (; has(&iter); inc(&iter)) {
+    _Entry *me = iter.__entry;
     _map_insert_helper(map, me->pair.key, me->pair.value, me->hash_value,
                        new_table, new_table_sz, &new_first, &new_last);
   }
-  _map_iterate_internal(map, insert_in_new_table);
 
   map->dealloc((void **)&map->table);
   map->table = new_table;
@@ -230,4 +227,34 @@ void _resize_table(Map *map) {
   map->first = new_first;
   map->last = new_last;
   map->entries_thresh = calculate_thresh(new_table_sz);
+}
+
+void inc(M_iter *iter) {
+  ASSERT(NOT_NULL(iter), NOT_NULL(iter->__entry));
+  iter->__entry = iter->__entry->next;
+}
+
+bool has(M_iter *iter) {
+  ASSERT(NOT_NULL(iter));
+  return NULL != iter->__entry;
+}
+
+Pair *pair(M_iter *iter) {
+  ASSERT(NOT_NULL(iter));
+  return (NULL == iter->__entry) ? NULL : &iter->__entry->pair;
+}
+
+const void *key(M_iter *iter) {
+  ASSERT(NOT_NULL(iter));
+  return (NULL == iter->__entry) ? NULL : iter->__entry->pair.key;
+}
+void *value(M_iter *iter) {
+  ASSERT(NOT_NULL(iter));
+  return (NULL == iter->__entry) ? NULL : iter->__entry->pair.value;
+}
+
+M_iter map_iter(Map *map) {
+  ASSERT(NOT_NULL(map));
+  M_iter iter = {.__entry = map->first};
+  return iter;
 }

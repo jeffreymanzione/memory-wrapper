@@ -113,4 +113,16 @@ void set_iterate(const Set *set, Action action);
 //     larger.
 int set_size(const Set *set);
 
+// Creates a new iterator for [map].
+//
+// Usage:
+//   Set *set = ...;
+//   ...
+//   M_iter iter = set_iter(set);
+//   void *val;
+//   for (val = value(&iter); has_next(&iter); inc(&iter)) {
+//     do_something(val);
+//   }
+M_iter set_iter(Set *set);
+
 #endif /* STRUCT_SET_H_ */

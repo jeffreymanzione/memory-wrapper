@@ -16,6 +16,7 @@ cc_library(
         "//struct:set",
         "//struct:struct_defaults",
     ],
+    alwayslink = True,
 )
 
 cc_test(

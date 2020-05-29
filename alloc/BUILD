@@ -8,9 +8,9 @@ cc_library(
     name = "alloc",
     srcs = ["alloc.c"],
     hdrs = ["alloc.h"],
-    includes = ["C:\\msys64\\mingw64\206_64-w64-mingw32\\include"],
     deps = [
         "//debug",
         "//struct:set",
     ],
+    alwayslink = True,
 )

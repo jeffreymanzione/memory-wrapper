@@ -16,11 +16,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-extern bool __NEST_DEBUG;
-extern int __LINE_NUM;
-extern const char *__FUNC_NAME;
-extern const char *__FILE_NAME;
-
 // DEBUGF(fmt, ...)
 //
 // Outputs a message with the given [fmt] just like pritnf but with some
@@ -38,7 +33,7 @@ extern const char *__FILE_NAME;
 
 #define DEBUGF(fmt, ...) \
   do {                   \
-  } while (0);
+  } while (0)
 
 #endif
 
@@ -122,13 +117,24 @@ extern const char *__FILE_NAME;
 #else
 #define ASSERT(...)
 #define ASSERT1(exp) \
-  { (void)(exp); }
+  do {               \
+    (void)(exp);     \
+  } while (0)
 #endif
+
+// Do not touch these.
+extern bool __NEST_DEBUG;
+extern int __LINE_NUM;
+extern const char *__FUNC_NAME;
+extern const char *__FILE_NAME;
 
 // There should be no reason to call these functions directly, so please prefer
 // their macro counterparts.
+
+#ifdef DEBUG
 void __debugf(int line_num, const char func_name[], const char file_name[],
               const char fmt[], ...);
+#endif
 void __error(int line_num, const char func_name[], const char file_name[],
              const char fmr[], ...);
 void __error_nest(int line_num, const char func_name[], const char file_name[],
