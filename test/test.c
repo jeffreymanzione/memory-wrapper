@@ -52,7 +52,15 @@ int main(int argc, const char *argv[]) {
   printf("%s=%d\n", "def", *((int *)map_lookup(map, "def")));
   printf("%s=%d\n", "ghi", *((int *)map_lookup(map, "ghi")));
 
+  printf("Iterator:\n");
+  M_iter iter = map_iter(map);
+  for (; has(&iter); inc(&iter)) {
+    Pair *kv = pair(&iter);
+    printf("%s=%d\n", (char *)kv->key, *((int *)kv->value));
+  }
   map_delete(map);
+
+  printf("Set\n");
 
   Set *set = set_create_default();
   set_insert(set, &abc);
@@ -69,7 +77,6 @@ int main(int argc, const char *argv[]) {
   printf("%p %p %p %d\n", "Hello, world!", str1, str2, str1 == str2);
 
   ARENA_FINALIZE(TestStruct);
-
   intern_finalize();
   alloc_finalize();
 

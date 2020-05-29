@@ -56,6 +56,11 @@ int set_size(const Set *set) { return map_size(&set->map); }
 
 void set_iterate(const Set *set, Action action) {
   ASSERT_NOT_NULL(set);
-  void value_action(Pair * p) { action(p->value); }
-  map_iterate(&set->map, value_action);
+  M_iter iter = set_iter((Set *)set);
+  void *val;
+  for (; has(&iter); inc(&iter)) {
+    action(value(&iter));
+  }
 }
+
+M_iter set_iter(Set *set) { return map_iter(&set->map); }

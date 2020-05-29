@@ -130,4 +130,40 @@ void map_iterate(const Map *map, PairAction pair_action);
 //     larger.
 uint32_t map_size(const Map *);
 
+// Struct for maintaining iterator state.
+typedef struct {
+  // I know you won't listen, but don't manually manipulate this.
+  _Entry *__entry;
+} M_iter;
+
+// Creates a new iterator for [map].
+//
+// Usage:
+//   Map *map = ...;
+//   ...
+//   M_iter iter = map_iter(map);
+//   Pair *kv;
+//   for (kv = pair(&iter); has_next(&iter); inc(&iter)) {
+//     do_something(kv);
+//   }
+M_iter map_iter(Map *map);
+
+// Moves the iterator to the next entry.
+void inc(M_iter *iter);
+
+// Returns true if the iterator has more elements.
+bool has(M_iter *iter);
+
+// Returns the underlying key-value pair for the current position of the
+// iterator in the map.
+Pair *pair(M_iter *iter);
+
+// Returns just the key for the underlying key-value pair for the current
+// position of the iterator in the map.
+const void *key(M_iter *iter);
+
+// Returns just the value for the underlying key-value pair for the current
+// position of the iterator in the map.
+void *value(M_iter *iter);
+
 #endif /* MAP_H_ */

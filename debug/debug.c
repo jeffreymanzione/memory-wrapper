@@ -10,10 +10,10 @@
 #include <stdlib.h>
 
 // Global values for debug functions.
-bool NEST_DEBUG__ = false;
-int LINE_NUM__ = 0;
-const char *FUNC_NAME__ = NULL;
-const char *FILE_NAME__ = NULL;
+bool __NEST_DEBUG = false;
+int __LINE_NUM = 0;
+const char *__FUNC_NAME = NULL;
+const char *__FILE_NAME = NULL;
 
 void __error(int line_num, const char func_name[], const char file_name[],
              const char fmt[], ...) {
@@ -45,6 +45,7 @@ void __error_nest(int line_num, const char func_name[], const char file_name[],
   exit(1);
 }
 
+#ifdef DEBUG_HELPER
 void __debugf(int line_num, const char func_name[], const char file_name[],
               const char fmt[], ...) {
   va_list args;
@@ -55,3 +56,4 @@ void __debugf(int line_num, const char func_name[], const char file_name[],
   fflush(stdout);
   va_end(args);
 }
+#endif

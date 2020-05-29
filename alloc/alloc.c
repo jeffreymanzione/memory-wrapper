@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "debug/debug.h"
+#include "struct/map.h"
 #include "struct/set.h"
 
 // Relevant information related to an allocation/reallocation event.
@@ -60,12 +61,13 @@ bool alloc_ready() { return _is_inited; }
 _AllocInfo _alloc_info(uint32_t elt_size, uint32_t count, uint32_t line,
                        const char type_name[], const char func[],
                        const char file[]) {
-  _AllocInfo info = {.elt_size = elt_size,
-                     .count = count,
-                     .line = line,
-                     .type_name = strdup(type_name),
-                     .func = strdup(func),
-                     .file = strdup(file)};
+  _AllocInfo info = {.elt_size = elt_size, .count = count, .line = line};
+  info.type_name = malloc(sizeof(char) * strlen(type_name) + 1);
+  strcpy(info.type_name, type_name);
+  info.func = malloc(sizeof(char) * strlen(func) + 1);
+  strcpy(info.func, func);
+  info.file = malloc(sizeof(char) * strlen(file) + 1);
+  strcpy(info.file, file);
   return info;
 }
 
@@ -89,7 +91,9 @@ void alloc_finalize() {
   volatile bool alloc_val = _alloc_busy;
   _alloc_busy = true;
   ASSERT_NOT_NULL(_in_mem);
-  void embarrass_me(void *ptr) {
+  M_iter iter = set_iter(_in_mem);
+  void *ptr;
+  for (ptr = value(&iter); has(&iter); inc(&iter)) {
     ASSERT_NOT_NULL(ptr);
     _AllocInfo *info = (_AllocInfo *)(ptr - _alloc_info_size());
     fprintf(stderr, "Forgot to free %p(%sx%d) allocated at %s:%d in %s(...)\n",
@@ -99,7 +103,6 @@ void alloc_finalize() {
     DEALLOC(ptr);
     _is_inited = false;
   }
-  set_iterate(_in_mem, embarrass_me);
   set_delete(_in_mem);
   _alloc_busy = alloc_val;
 }
