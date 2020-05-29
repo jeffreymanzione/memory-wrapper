@@ -12,5 +12,4 @@ cc_library(
         "//debug",
         "//struct:set",
     ],
-    alwayslink = True,
 )

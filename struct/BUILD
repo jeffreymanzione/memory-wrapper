@@ -12,7 +12,6 @@ cc_library(
         "//debug",
         "//util",
     ],
-    alwayslink = True,
 )
 
 cc_library(
@@ -24,7 +23,6 @@ cc_library(
         "//debug",
         "//util",
     ],
-    alwayslink = True,
 )
 
 cc_library(
@@ -36,5 +34,4 @@ cc_library(
         ":set",
         "//alloc",
     ],
-    alwayslink = True,
 )

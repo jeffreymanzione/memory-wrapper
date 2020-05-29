@@ -9,5 +9,4 @@ cc_library(
     srcs = ["util.c"],
     hdrs = ["util.h"],
     deps = [],
-    alwayslink = True,
 )
