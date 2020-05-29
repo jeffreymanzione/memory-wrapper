@@ -198,13 +198,13 @@ void *map_lookup(const Map *map, const void *key) {
 
 void map_iterate(const Map *map, PairAction action) {
   ASSERT(NOT_NULL(map));
-  M_iter iter = map_iter((Map *)map);
-  for (; has(&iter); inc(&iter)) {
+  M_iter iter;
+  for (iter = map_iter((Map *)map); has(&iter); inc(&iter)) {
     action(&iter.__entry->pair);
   }
 }
 
-uint32_t map_size(const Map *map) { return map->num_entries; }
+inline uint32_t map_size(const Map *map) { return map->num_entries; }
 
 void _resize_table(Map *map) {
   ASSERT(NOT_NULL(map));
@@ -213,8 +213,8 @@ void _resize_table(Map *map) {
   _Entry *new_first = NULL;
   _Entry *new_last = NULL;
 
-  M_iter iter = map_iter(map);
-  for (; has(&iter); inc(&iter)) {
+  M_iter iter;
+  for (iter = map_iter(map); has(&iter); inc(&iter)) {
     _Entry *me = iter.__entry;
     _map_insert_helper(map, me->pair.key, me->pair.value, me->hash_value,
                        new_table, new_table_sz, &new_first, &new_last);
@@ -228,31 +228,32 @@ void _resize_table(Map *map) {
   map->entries_thresh = calculate_thresh(new_table_sz);
 }
 
-void inc(M_iter *iter) {
+inline void inc(M_iter *iter) {
   ASSERT(NOT_NULL(iter), NOT_NULL(iter->__entry));
   iter->__entry = iter->__entry->next;
 }
 
-bool has(M_iter *iter) {
+inline bool has(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return NULL != iter->__entry;
 }
 
-Pair *pair(M_iter *iter) {
+inline Pair *pair(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return (NULL == iter->__entry) ? NULL : &iter->__entry->pair;
 }
 
-const void *key(M_iter *iter) {
+inline const void *key(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return (NULL == iter->__entry) ? NULL : iter->__entry->pair.key;
 }
-void *value(M_iter *iter) {
+
+inline void *value(M_iter *iter) {
   ASSERT(NOT_NULL(iter));
   return (NULL == iter->__entry) ? NULL : iter->__entry->pair.value;
 }
 
-M_iter map_iter(Map *map) {
+inline M_iter map_iter(Map *map) {
   ASSERT(NOT_NULL(map));
   M_iter iter = {.__entry = map->first};
   return iter;

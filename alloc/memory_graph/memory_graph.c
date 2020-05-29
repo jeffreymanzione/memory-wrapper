@@ -73,10 +73,11 @@ MGraph *mgraph_create(const MGraphConf *const config) {
 
 void mgraph_delete(MGraph *mg) {
   ASSERT(NOT_NULL(mg));
-  void delete_all(void *ptr) {
-    _node_delete(mg, (Node *)ptr, /*delete_edges=*/true, /*delete_node=*/true);
+  M_iter iter = set_iter(&mg->nodes);
+  for (; has(&iter); inc(&iter)) {
+    _node_delete(mg, (Node *)value(&iter), /*delete_edges=*/true,
+                 /*delete_node=*/true);
   }
-  set_iterate(&mg->nodes, delete_all);
   __arena_finalize(&mg->node_arena);
   __arena_finalize(&mg->edge_arena);
   set_finalize(&mg->nodes);
@@ -130,36 +131,39 @@ void mgraph_dec(MGraph *mg, Node *parent, Node *child) {
   c2p->ref_count--;
 }
 
+void _process_node(Node *node, Set *marked) {
+  if (!set_insert(marked, node)) {
+    // Node already processed
+    return;
+  }
+  M_iter child_iter = map_iter(&node->children);
+  for (; has(&child_iter); inc(&child_iter)) {
+    _Edge *e = (_Edge *)value(&child_iter);
+    if (e->ref_count > 0) {
+      _process_node((void *)key(&child_iter), marked);  // blessed.
+    }
+  }
+}
+
 void mgraph_collect_garbage(MGraph *mg) {
   ASSERT(NOT_NULL(mg));
   Set marked;
   set_init_custom_comparator(&marked, set_size(&mg->nodes) * 2, _node_hasher,
                              _node_comparator);
-  void mark_node(void *ptr) {
-    Node *node = (Node *)ptr;
-    if (!set_insert(&marked, node)) {
-      // Node already processed
-      return;
-    }
-    void mark_node_child(Pair * kv) {
-      _Edge *e = (_Edge *)kv->value;
-      if (e->ref_count > 0) {
-        mark_node((void *)kv->key);  // blessed.
-      }
-    }
-    map_iterate(&node->children, mark_node_child);
+  M_iter root_iter = set_iter(&mg->roots);
+  for (; has(&root_iter); inc(&root_iter)) {
+    _process_node((Node *)value(&root_iter), &marked);
   }
-  set_iterate(&mg->roots, mark_node);
 
-  void delete_node_if_not_marked(void *ptr) {
-    Node *node = (Node *)ptr;
+  M_iter node_iter = set_iter(&mg->nodes);
+  for (; has(&node_iter); inc(&node_iter)) {
+    Node *node = (Node *)value(&node_iter);
     if (set_lookup(&marked, node)) {
       return;
     }
     _node_delete(mg, node, mg->config.eager_delete_edges,
                  mg->config.eager_delete_nodes);
   }
-  set_iterate(&mg->nodes, delete_node_if_not_marked);
   set_finalize(&marked);
 }
 
