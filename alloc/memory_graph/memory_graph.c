@@ -206,7 +206,7 @@ Node *_node_create(MGraph *mg, Ref ptr, Deleter del) {
 
 void _node_delete(MGraph *mg, Node *node, bool delete_edges, bool delete_node) {
   ASSERT(NOT_NULL(mg), NOT_NULL(node));
-  node->del(node->ptr);
+  node->del(node->ptr, mg->config.ctx);
   if (delete_edges) {
     void delete_edge(Pair * pair) {
       __arena_dealloc(&mg->edge_arena, (_Edge *)pair->value);

@@ -16,7 +16,7 @@
 typedef void *Ref;
 
 // A funciton which takes a void pointer and we trust will delete it.
-typedef void (*Deleter)(void *);
+typedef void (*Deleter)(void *ptr, void *ctx);
 
 typedef struct __Node Node;
 typedef struct __MGraph MGraph;
@@ -27,6 +27,8 @@ typedef struct {
   bool eager_delete_edges;
   // Memory for Nodes will be freed when the node entity is deleted.
   bool eager_delete_nodes;
+  // Context needed during deltion operations.
+  void *ctx;
 } MGraphConf;
 
 // Creates a MGraph based on the given [config].
