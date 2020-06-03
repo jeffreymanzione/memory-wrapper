@@ -45,7 +45,7 @@ void __error_nest(int line_num, const char func_name[], const char file_name[],
   exit(1);
 }
 
-#ifdef DEBUG_HELPER
+#ifdef DEBUG
 void __debugf(int line_num, const char func_name[], const char file_name[],
               const char fmt[], ...) {
   va_list args;
