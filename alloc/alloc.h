@@ -54,6 +54,25 @@ void alloc_set_verbose(bool);
 #define ALLOC_ARRAY2(type, count) (type *)malloc((count) * sizeof(type))
 #endif
 
+// Allocates a solid memory block of size: [type_sz*count].
+//
+//
+// Details:
+//   - This function does not guarantee that the allocated memory will
+//     be cleared. If that guarnatee is required, use ALLOC_ARRAY().
+//   - Can only bee used after alloc_init() has been called.
+//
+// Usage:
+//   MyStruct *arr = ALLOC_ARRAY_SZ("MyStruct", sizeof(MyStruct), 20);
+#ifdef DEBUG_MEMORY
+#define ALLOC_ARRAY_SZ(type_name, type_sz, count)                    \
+  (type *)__alloc(/*type=*/(type_sz), /*count=*/(count), (__LINE__), \
+                  (__func__), (__FILE__), (type_name))
+#else
+#define ALLOC_ARRAY_SZ(type_name, type_sz, count) \
+  (type *)malloc((count) * (type_sz))
+#endif
+
 // Allocates a new solid memory block of size: [type_sz*count] and
 // copies the existing data at [ptr] to the newly allocated data, freeing
 // the previously allocated block.
