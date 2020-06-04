@@ -63,14 +63,14 @@ void alloc_set_verbose(bool);
 //   - Can only bee used after alloc_init() has been called.
 //
 // Usage:
-//   MyStruct *arr = ALLOC_ARRAY_SZ("MyStruct", sizeof(MyStruct), 20);
+//   MyStruct *arr =
+//       (MyStruct *) ALLOC_ARRAY_SZ("MyStruct", sizeof(MyStruct), 20);
 #ifdef DEBUG_MEMORY
-#define ALLOC_ARRAY_SZ(type_name, type_sz, count)                    \
-  (type *)__alloc(/*type=*/(type_sz), /*count=*/(count), (__LINE__), \
-                  (__func__), (__FILE__), (type_name))
+#define ALLOC_ARRAY_SZ(type_name, type_sz, count)                        \
+  __alloc(/*type=*/(type_sz), /*count=*/(count), (__LINE__), (__func__), \
+          (__FILE__), (type_name))
 #else
-#define ALLOC_ARRAY_SZ(type_name, type_sz, count) \
-  (type *)malloc((count) * (type_sz))
+#define ALLOC_ARRAY_SZ(type_name, type_sz, count) malloc((count) * (type_sz))
 #endif
 
 // Allocates a new solid memory block of size: [type_sz*count] and
