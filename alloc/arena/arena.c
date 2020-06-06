@@ -11,11 +11,6 @@
 #include "alloc/alloc.h"
 #include "debug/debug.h"
 
-ARENA_DECLARE(ElementContainer);
-ARENA_DECLARE(Node);
-ARENA_DECLARE(NodeEdge);
-ARENA_DECLARE(Token);
-
 #define DEFAULT_ELTS_IN_CHUNK 128
 
 int descriptor_sz;

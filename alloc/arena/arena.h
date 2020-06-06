@@ -81,7 +81,7 @@
 // Usage:
 //  MyType *t = ARENA_ALLOC(MyType);
 //  ARENA_DEALLOC(MyType, t);
-#define ARENA_DEALLOC(typename, ptr) __arena_dealloc(&___ARENA__##typename, ptr)
+#define ARENA_DEALLOC(typename, ptr) __arena_dealloc(&__ARENA__##typename, ptr)
 
 typedef struct __Subarena _Subarena;
 
