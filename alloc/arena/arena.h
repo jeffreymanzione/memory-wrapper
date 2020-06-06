@@ -21,6 +21,7 @@
 #ifndef ALLOC_ARENA_ARENA_H_
 #define ALLOC_ARENA_ARENA_H_
 
+#include <stdbool.h>
 #include <stddef.h>
 
 // Declares an arena for the given type.
@@ -30,9 +31,7 @@
 //
 // Usage:
 //   ARENA_DECLARE(MyType);
-#define ARENA_DECLARE(typename)       \
-  extern __Arena __ARENA__##typename; \
-  void *__arena_alloc__##typename()
+#define ARENA_DECLARE(typename) extern __Arena __ARENA__##typename
 
 // Defines an arena for a given type.
 //
@@ -41,9 +40,7 @@
 //
 // Usage:
 //   ARENA_DEFINE(MyType);
-#define ARENA_DEFINE(typename) \
-  __Arena __ARENA__##typename; \
-  void *__arena_alloc__##typename()
+#define ARENA_DEFINE(typename) __Arena __ARENA__##typename = {.inited = false};
 
 // Initializes an arena so that it can allocate memory.
 //
@@ -89,6 +86,7 @@
 typedef struct __Subarena _Subarena;
 
 typedef struct {
+  bool inited;
   const char *name;
   _Subarena *last;
   size_t alloc_sz;
