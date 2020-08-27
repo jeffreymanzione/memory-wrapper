@@ -92,8 +92,8 @@ void alloc_finalize() {
   _alloc_busy = true;
   ASSERT_NOT_NULL(_in_mem);
   M_iter iter = set_iter(_in_mem);
-  void *ptr;
-  for (ptr = value(&iter); has(&iter); inc(&iter)) {
+  for (; has(&iter); inc(&iter)) {
+    void *ptr = value(&iter);
     ASSERT_NOT_NULL(ptr);
     _AllocInfo *info = (_AllocInfo *)(ptr - _alloc_info_size());
     fprintf(stderr, "Forgot to free %p(%sx%d) allocated at %s:%d in %s(...)\n",

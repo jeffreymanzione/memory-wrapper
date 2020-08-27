@@ -75,8 +75,8 @@ void mgraph_delete(MGraph *mg) {
   ASSERT(NOT_NULL(mg));
   M_iter iter = set_iter(&mg->nodes);
   for (; has(&iter); inc(&iter)) {
-    _node_delete(mg, (Node *)value(&iter), /*delete_edges=*/true,
-                 /*delete_node=*/true);
+    _node_delete(mg, (Node *)value(&iter), /*delete_edges=*/false,
+                 /*delete_node=*/false);
   }
   __arena_finalize(&mg->node_arena);
   __arena_finalize(&mg->edge_arena);
@@ -195,6 +195,7 @@ int32_t _edge_comparator(const void *n1, const void *n2) {
 Node *_node_create(MGraph *mg, Ref ptr, Deleter del) {
   ASSERT(NOT_NULL(mg), NOT_NULL(ptr), NOT_NULL(del));
   Node *node = (Node *)__arena_alloc(&mg->node_arena);
+  node->id.int_id = _node_id(mg);
   node->ptr = ptr;
   node->del = del;
   map_init_custom_comparator(&node->children, DEFAULT_CHILDREN_TABLE_SZ,
@@ -206,16 +207,18 @@ Node *_node_create(MGraph *mg, Ref ptr, Deleter del) {
 
 void _node_delete(MGraph *mg, Node *node, bool delete_edges, bool delete_node) {
   ASSERT(NOT_NULL(mg), NOT_NULL(node));
-  node->del(node->ptr, mg->config.ctx);
+  if (NULL != node->del) {
+    node->del(node->ptr, mg->config.ctx);
+  }
   if (delete_edges) {
     void delete_edge(Pair * pair) {
       __arena_dealloc(&mg->edge_arena, (_Edge *)pair->value);
     }
     map_iterate(&node->children, delete_edge);
-    map_finalize(&node->children);
     map_iterate(&node->parents, delete_edge);
-    map_finalize(&node->parents);
   }
+  map_finalize(&node->children);
+  map_finalize(&node->parents);
   if (delete_node) {
     __arena_dealloc(&mg->node_arena, node);
   }
