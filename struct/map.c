@@ -18,10 +18,10 @@ struct __Entry {
   _Entry *prev, *next;
 };
 
-#define pos(hval, num_probes, table_sz) \
+#define pos(hval, num_probes, table_sz)                                        \
   (((hval) + ((num_probes) * (num_probes))) % (table_sz))
 #define calculate_new_size(current_sz) (((current_sz)*2) + 1)
-#define calculate_thresh(table_sz) ((int)(((float)(3 * (table_sz))) / 4))
+#define calculate_thresh(table_sz) ((int)(((float)(1 * (table_sz))) / 2))
 
 typedef void (*EntryAction)(_Entry *me);
 
@@ -61,9 +61,10 @@ void map_delete(Map *map) {
 
 bool _map_insert_helper(Map *map, const void *key, const void *value,
                         uint32_t hval, _Entry *table, uint32_t table_sz,
-                        _Entry **first, _Entry **last) {
+                        _Entry **first, _Entry **last, bool *too_many_inserts) {
   ASSERT(NOT_NULL(map));
   int num_probes = 0;
+  int num_previously_used = 0;
   _Entry *first_empty = NULL;
   int num_probes_at_first_empty = -1;
   while (true) {
@@ -95,6 +96,13 @@ bool _map_insert_helper(Map *map, const void *key, const void *value,
     }
     // Spot is vacant but previously used, mark it so we can use it later.
     if (-1 == me->num_probes) {
+      num_previously_used++;
+      // Returns early if there is a severe performance bottleneck so the table
+      // can be rehashed.
+      if (num_previously_used > (table_sz / 2)) {
+        *too_many_inserts = true;
+        return false;
+      }
       if (NULL == first_empty) {
         first_empty = me;
         num_probes_at_first_empty = num_probes;
@@ -131,9 +139,22 @@ bool map_insert(Map *map, const void *key, const void *value) {
   if (map->num_entries > map->entries_thresh) {
     _resize_table(map);
   }
-  bool was_inserted =
-      _map_insert_helper(map, key, value, map->hash(key), map->table,
-                         map->table_sz, &map->first, &map->last);
+  bool too_many_inserts = false;
+  bool was_inserted = _map_insert_helper(map, key, value, map->hash(key),
+                                         map->table, map->table_sz, &map->first,
+                                         &map->last, &too_many_inserts);
+  // Maps may have a lot of removed spots. If this causes a performance
+  // slowdown, then it is better to rehash the map.
+  if (too_many_inserts) {
+    _resize_table(map);
+    too_many_inserts = false;
+    _map_insert_helper(map, key, value, map->hash(key), map->table,
+                       map->table_sz, &map->first, &map->last,
+                       &too_many_inserts);
+    if (too_many_inserts) {
+      ERROR("THIS SHOULD NEVER HAPPEN.");
+    }
+  }
   if (was_inserted) {
     map->num_entries++;
   }
@@ -216,8 +237,13 @@ void _resize_table(Map *map) {
   M_iter iter;
   for (iter = map_iter(map); has(&iter); inc(&iter)) {
     _Entry *me = iter.__entry;
+    bool too_many_inserts = false;
     _map_insert_helper(map, me->pair.key, me->pair.value, me->hash_value,
-                       new_table, new_table_sz, &new_first, &new_last);
+                       new_table, new_table_sz, &new_first, &new_last,
+                       &too_many_inserts);
+    if (too_many_inserts) {
+      ERROR("THIS SHOULD NEVER HAPPEN.");
+    }
   }
 
   map->dealloc((void **)&map->table);
