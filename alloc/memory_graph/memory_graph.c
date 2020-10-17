@@ -145,8 +145,9 @@ void _process_node(Node *node, Set *marked) {
   }
 }
 
-void mgraph_collect_garbage(MGraph *mg) {
+uint32_t mgraph_collect_garbage(MGraph *mg) {
   ASSERT(NOT_NULL(mg));
+  uint32_t deleted_nodes_count = 0;
   Set marked;
   set_init_custom_comparator(&marked, set_size(&mg->nodes) * 2, _node_hasher,
                              _node_comparator);
@@ -163,8 +164,10 @@ void mgraph_collect_garbage(MGraph *mg) {
     }
     _node_delete(mg, node, mg->config.eager_delete_edges,
                  mg->config.eager_delete_nodes);
+    deleted_nodes_count++;
   }
   set_finalize(&marked);
+  return deleted_nodes_count;
 }
 
 uint32_t _node_id(MGraph *mg) {
