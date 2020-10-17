@@ -159,9 +159,6 @@ uint32_t mgraph_collect_garbage(MGraph *mg) {
   M_iter node_iter = set_iter(&mg->nodes);
   for (; has(&node_iter); inc(&node_iter)) {
     Node *node = (Node *)value(&node_iter);
-    if (set_lookup(&marked, node)) {
-      return;
-    }
     _node_delete(mg, node, mg->config.eager_delete_edges,
                  mg->config.eager_delete_nodes);
     deleted_nodes_count++;
