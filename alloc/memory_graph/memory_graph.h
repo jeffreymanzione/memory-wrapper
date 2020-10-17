@@ -11,6 +11,7 @@
 #define ALLOC_MEMORY_GRAPH_MEMORY_GRAPH_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 // Useful for changing is type in the future.
 typedef void *Ref;
@@ -56,7 +57,7 @@ void mgraph_inc(MGraph *mg, Node *parent, Node *child);
 void mgraph_dec(MGraph *mg, Node *parent, Node *child);
 
 // Deletes any nodes which no longer have a target reference and potentially
-// freeing up their space to be reused.
-void mgraph_collect_garbage(MGraph *mg);
+// freeing up their space to be reused. Returns the number of nodes which were freed.
+uint32_t mgraph_collect_garbage(MGraph *mg);
 
 #endif /* ALLOC_MEMORY_GRAPH_MEMORY_GRAPH_H_ */
