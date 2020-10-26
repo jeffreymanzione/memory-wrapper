@@ -21,7 +21,7 @@ struct __Entry {
 #define pos(hval, num_probes, table_sz)                                        \
   (((hval) + ((num_probes) * (num_probes))) % (table_sz))
 #define calculate_new_size(current_sz) (((current_sz)*2) + 1)
-#define calculate_thresh(table_sz) ((int)(((float)(1 * (table_sz))) / 2))
+#define calculate_thresh(table_sz) ((int)((table_sz) / 2.f))
 
 typedef void (*EntryAction)(_Entry *me);
 
@@ -148,9 +148,9 @@ bool map_insert(Map *map, const void *key, const void *value) {
   if (too_many_inserts) {
     _resize_table(map);
     too_many_inserts = false;
-    _map_insert_helper(map, key, value, map->hash(key), map->table,
-                       map->table_sz, &map->first, &map->last,
-                       &too_many_inserts);
+    was_inserted = _map_insert_helper(map, key, value, map->hash(key),
+                                      map->table, map->table_sz, &map->first,
+                                      &map->last, &too_many_inserts);
     if (too_many_inserts) {
       ERROR("THIS SHOULD NEVER HAPPEN.");
     }
@@ -229,13 +229,13 @@ inline uint32_t map_size(const Map *map) { return map->num_entries; }
 
 void _resize_table(Map *map) {
   ASSERT(NOT_NULL(map));
-  int new_table_sz = calculate_new_size(map->table_sz);
+  uint32_t new_table_sz = calculate_new_size(map->table_sz);
   _Entry *new_table = map->alloc(sizeof(_Entry), new_table_sz, "_Entry");
   _Entry *new_first = NULL;
   _Entry *new_last = NULL;
 
-  M_iter iter;
-  for (iter = map_iter(map); has(&iter); inc(&iter)) {
+  M_iter iter = map_iter(map);
+  for (; has(&iter); inc(&iter)) {
     _Entry *me = iter.__entry;
     bool too_many_inserts = false;
     _map_insert_helper(map, me->pair.key, me->pair.value, me->hash_value,
