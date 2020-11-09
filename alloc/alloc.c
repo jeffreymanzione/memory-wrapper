@@ -95,7 +95,7 @@ void alloc_finalize() {
   for (; has(&iter); inc(&iter)) {
     void *ptr = value(&iter);
     ASSERT_NOT_NULL(ptr);
-    _AllocInfo *info = (_AllocInfo *)(ptr - _alloc_info_size());
+    _AllocInfo *info = (_AllocInfo *)((char *)ptr - _alloc_info_size());
     fprintf(stderr, "Forgot to free %p(%sx%d) allocated at %s:%d in %s(...)\n",
             ptr, info->type_name, info->count, info->file, info->line,
             info->func);
@@ -165,7 +165,7 @@ void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
   if (NULL == info_ptr) {
     __error(line, func, file, "Failed to allocate memory.");
   }
-  void *ptr = info_ptr + info_space;
+  void *ptr = (char *)info_ptr + info_space;
   _alloc_register(ptr, elt_size, count, line, func, file, type_name);
   _log_alloc(line, func, file, "Allocated a %s[%d] at %p", type_name, count,
              ptr);
@@ -183,8 +183,8 @@ void *__realloc(void *ptr, uint32_t elt_size, uint32_t count, uint32_t line,
     __error(line, func, file, "Tried to realloc to an empty array.");
   }
   int info_space = _alloc_info_size();
-  void *info_ptr = ptr - info_space;
-  _AllocInfo old_info = *((_AllocInfo *)(ptr - info_space));
+  void *info_ptr = (char *)ptr - info_space;
+  _AllocInfo old_info = *((_AllocInfo *)((char *)ptr - info_space));
   int old_size = old_info.elt_size * old_info.count;
   void *new_info_ptr = realloc(info_ptr, info_space + new_size);
   if (NULL == new_info_ptr) {
@@ -192,7 +192,7 @@ void *__realloc(void *ptr, uint32_t elt_size, uint32_t count, uint32_t line,
   }
   *((_AllocInfo *)new_info_ptr) =
       _alloc_info(elt_size, count, line, old_info.type_name, func, file);
-  void *new_ptr = new_info_ptr + info_space;
+  void *new_ptr = (char *)new_info_ptr + info_space;
   if (new_size > old_size) {
     size_t diff = new_size - old_size;
     void *start = ((char *)new_ptr) + old_size;
@@ -214,7 +214,7 @@ void __dealloc(void **ptr, uint32_t line, const char func[],
     __error(line, func, file, "Pointer argument was null.");
   }
   int info_space = _alloc_info_size();
-  void *info_ptr = *ptr - info_space;
+  void *info_ptr = *((char **)ptr) - info_space;
   _alloc_info_delete((_AllocInfo *)info_ptr, line, func, file);
   free(info_ptr);
   _alloc_unregister(*ptr, line, func, file);

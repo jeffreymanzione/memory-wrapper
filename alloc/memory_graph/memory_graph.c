@@ -23,10 +23,10 @@ typedef Node *(*NProducer)();
 
 struct __MGraph {
   MGraphConf config;
-  __Arena node_arena;  // Node
-  __Arena edge_arena;  // _Edge
-  Set nodes;           // Node
-  Set roots;           // Node
+  __Arena node_arena; // Node
+  __Arena edge_arena; // _Edge
+  Set nodes;          // Node
+  Set roots;          // Node
   uint32_t node_count;
 };
 
@@ -38,8 +38,8 @@ struct __Node {
   _Id id;
   Ref ptr;
   Deleter del;
-  Map children;  // key: Node, vale: _Edge
-  Map parents;   // key: Node, vale: _Edge
+  Map children; // key: Node, vale: _Edge
+  Map parents;  // key: Node, vale: _Edge
 };
 
 typedef struct {
@@ -140,7 +140,7 @@ void _process_node(Node *node, Set *marked) {
   for (; has(&child_iter); inc(&child_iter)) {
     _Edge *e = (_Edge *)value(&child_iter);
     if (e->ref_count > 0) {
-      _process_node((void *)key(&child_iter), marked);  // blessed.
+      _process_node((void *)key(&child_iter), marked); // blessed.
     }
   }
 }
@@ -164,6 +164,7 @@ uint32_t mgraph_collect_garbage(MGraph *mg) {
     Node *node = (Node *)value(&node_iter);
     _node_delete(mg, node, mg->config.eager_delete_edges,
                  mg->config.eager_delete_nodes);
+    set_remove(&mg->nodes, node);
     deleted_nodes_count++;
   }
   set_finalize(&marked);
@@ -214,11 +215,14 @@ void _node_delete(MGraph *mg, Node *node, bool delete_edges, bool delete_node) {
     node->del(node->ptr, mg->config.ctx);
   }
   if (delete_edges) {
-    void delete_edge(Pair * pair) {
-      __arena_dealloc(&mg->edge_arena, (_Edge *)pair->value);
+    M_iter children = set_iter(&node->children);
+    for (; has(&children); inc(&children)) {
+      __arena_dealloc(&mg->edge_arena, (_Edge *)value(&children));
     }
-    map_iterate(&node->children, delete_edge);
-    map_iterate(&node->parents, delete_edge);
+    M_iter parents = set_iter(&node->parents);
+    for (; has(&parents); inc(&parents)) {
+      __arena_dealloc(&mg->edge_arena, (_Edge *)value(&parents));
+    }
   }
   map_finalize(&node->children);
   map_finalize(&node->parents);
