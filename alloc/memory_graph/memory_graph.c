@@ -215,11 +215,11 @@ void _node_delete(MGraph *mg, Node *node, bool delete_edges, bool delete_node) {
     node->del(node->ptr, mg->config.ctx);
   }
   if (delete_edges) {
-    M_iter children = set_iter(&node->children);
+    M_iter children = map_iter(&node->children);
     for (; has(&children); inc(&children)) {
       __arena_dealloc(&mg->edge_arena, (_Edge *)value(&children));
     }
-    M_iter parents = set_iter(&node->parents);
+    M_iter parents = map_iter(&node->parents);
     for (; has(&parents); inc(&parents)) {
       __arena_dealloc(&mg->edge_arena, (_Edge *)value(&parents));
     }
