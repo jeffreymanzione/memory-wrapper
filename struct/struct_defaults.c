@@ -70,6 +70,6 @@ void *__calloc_fn(size_t type_sz, size_t count, const char name[]) {
   return calloc(count, type_sz);
 }
 
-void __free_fn(void **ptr) { return free(*ptr); }
+void __free_fn(void **ptr) { free(*ptr); }
 
 #endif

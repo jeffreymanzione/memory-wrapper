@@ -13,6 +13,9 @@
 
 #define DEFAULT_ELTS_IN_CHUNK 128
 
+// Treates a void* as a char* to make Windows CC happy.
+#define _CHAR_POINTER(void_ptr) ((char *)(void_ptr))
+
 int descriptor_sz;
 
 typedef struct {
@@ -48,7 +51,7 @@ void __arena_init(__Arena *arena, size_t sz, const char name[]) {
   arena->alloc_sz = sz + descriptor_sz;
   arena->last = _subarena_create(NULL, arena->alloc_sz);
   arena->next = arena->last->block;
-  arena->end = arena->last->block + arena->last->block_sz;
+  arena->end = _CHAR_POINTER(arena->last->block) + arena->last->block_sz;
   arena->last_freed = NULL;
 }
 
@@ -63,7 +66,7 @@ void *__arena_alloc(__Arena *arena) {
   if (NULL != arena->last_freed) {
     void *free_spot = arena->last_freed;
     arena->last_freed = ((Descriptor *)free_spot)->prev_freed;
-    return free_spot + descriptor_sz;
+    return _CHAR_POINTER(free_spot) + descriptor_sz;
   }
   // Allocate a new subarena if the current one is full.
   if (arena->next == arena->end) {
@@ -71,16 +74,16 @@ void *__arena_alloc(__Arena *arena) {
     new_sa->prev = arena->last;
     arena->last = new_sa;
     arena->next = arena->last->block;
-    arena->end = arena->last->block + arena->last->block_sz;
+    arena->end = _CHAR_POINTER(arena->last->block) + arena->last->block_sz;
   }
   void *spot = arena->next;
-  arena->next += arena->alloc_sz;
-  return spot + descriptor_sz;
+  arena->next = _CHAR_POINTER(arena->next) + arena->alloc_sz;
+  return _CHAR_POINTER(spot) + descriptor_sz;
 }
 
 void __arena_dealloc(__Arena *arena, void *ptr) {
   ASSERT(NOT_NULL(arena), NOT_NULL(ptr));
-  Descriptor *d = (Descriptor *)(ptr - descriptor_sz);
+  Descriptor *d = (Descriptor *)(_CHAR_POINTER(ptr) - descriptor_sz);
   d->prev_freed = arena->last_freed;
   arena->last_freed = (void *)d;
 }
