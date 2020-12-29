@@ -56,9 +56,7 @@ void *__calloc_fn(size_t type_sz, size_t count, const char name[]) {
   return __alloc(type_sz, count, __LINE__, __func__, __FILE__, name);
 }
 
-void __free_fn(void **ptr) {
-  return __dealloc(ptr, __LINE__, __func__, __FILE__);
-}
+void __free_fn(void **ptr) { __dealloc(ptr, __LINE__, __func__, __FILE__); }
 
 #else
 
