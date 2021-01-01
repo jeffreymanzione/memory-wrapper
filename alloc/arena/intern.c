@@ -54,7 +54,7 @@ void *_malloc_fn(size_t type_sz, size_t count, const char name[]) {
   return malloc(count * type_sz);
 }
 
-void _free_fn(void **ptr) { return free(*ptr); }
+void _free_fn(void **ptr) { free(*ptr); }
 
 void intern_init() {
   strings.chunk = strings.last = _chunk_create();

@@ -18,7 +18,7 @@
   (((x & 0x000000FF) == 0) || ((x & 0x0000FF00) == 0) || \
    ((x & 0x00FF0000) == 0) || ((x & 0xFF000000) == 0))
 
-uint32_t default_hasher(const void *ptr) { return (uint32_t)(uint64_t)ptr; }
+uint32_t default_hasher(const void *ptr) { return (uint32_t)(intptr_t)ptr; }
 
 int32_t default_comparator(const void *ptr1, const void *ptr2) {
   return ((intptr_t)ptr1) - ((intptr_t)ptr2);
