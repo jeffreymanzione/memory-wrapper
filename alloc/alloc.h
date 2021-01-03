@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Initializes allocation system.
 void alloc_init();
@@ -146,6 +147,41 @@ void alloc_set_verbose(bool);
 //   MyStruct *arr = ALLOC2(MyStruct);
 #define ALLOC2(type) ALLOC_ARRAY2(type, 1)
 
+// Copies [str].
+//
+// Details:
+//   - Can only bee used after alloc_init() has been called.
+//   - Returns a null-terminated string copy of [str].
+//   - The allocated char[] will be strlen(str) + 1.
+//
+// Usage:
+//   char *cpy = ALLOC_STRDUP(src_str);
+//   DEALLOC(cpy);
+#ifdef DEBUG_MEMORY
+#define ALLOC_STRDUP(str)                                                      \
+  __strndup((char *)str, strlen(str), (__LINE__), (__func__), (__FILE__))
+#else
+#define ALLOC_STRDUP(str) strndup((char *)(str), strlen(str))
+#endif
+
+// Copies up to [len] characters of [str].
+//
+// Details:
+//   - Can only bee used after alloc_init() has been called.
+//   - Returns a null-terminated string copy of the first [len] characters of
+//     [str].
+//   - The allocated char[] will be len + 1.
+//
+// Usage:
+//   char *cpy = ALLOC_STRNDUP(src_str, 6);
+//   DEALLOC(cpy);
+#ifdef DEBUG_MEMORY
+#define ALLOC_STRNDUP(str, len)                                                \
+  __strndup((char *)str, len, (__LINE__), (__func__), (__FILE__))
+#else
+#define ALLOC_STRNDUP(str, len) strndup((char *)(str), len)
+#endif
+
 // Functions that are wrapped by the macros and should not be called directly.
 #ifdef DEBUG_MEMORY
 void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
@@ -153,6 +189,8 @@ void *__alloc(uint32_t elt_size, uint32_t count, uint32_t line,
 void *__realloc(void *, uint32_t elt_size, uint32_t count, uint32_t line,
                 const char func[], const char file[]);
 void __dealloc(void **, uint32_t line, const char func[], const char file[]);
+char *__strndup(char *, size_t len, uint32_t line, const char func[],
+                const char file[]);
 #endif
 
 #endif /* ALLOC_ALLOC_H_ */

@@ -221,3 +221,14 @@ void __dealloc(void **ptr, uint32_t line, const char func[],
   _log_alloc(line, func, file, "Deallocated memory from %p", *ptr);
   *ptr = NULL;
 }
+
+// Copies a string.
+char *__strndup(char *str, size_t len, uint32_t line, const char func[],
+                const char file[]) {
+  if (NULL == str) {
+    __error(line, func, file, "Pointer argument was null.");
+  }
+  char *cpy = ALLOC_ARRAY2(char, len + 1);
+  cpy[len] = '\0';
+  return strncpy(cpy, str, len);
+}
