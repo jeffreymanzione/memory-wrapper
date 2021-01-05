@@ -234,7 +234,7 @@ char *__strndup(char *str, size_t len, uint32_t line, const char func[],
 }
 
 #ifndef STRNDUP_AVAILABLE
-char *strndup(char *str, size_t chars) {
+char *strndup(const char *str, size_t chars) {
   char *buffer;
   int n;
   buffer = (char *)malloc(sizeof(char) * (chars + 1));
