@@ -232,3 +232,16 @@ char *__strndup(char *str, size_t len, uint32_t line, const char func[],
   cpy[len] = '\0';
   return strncpy(cpy, str, len);
 }
+
+#ifndef STRNDUP_AVAILABLE
+char *strndup(char *str, size_t chars) {
+  char *buffer;
+  int n;
+  buffer = (char *)malloc(sizeof(char) * (chars + 1));
+  if (buffer) {
+    for (n = 0; ((n < chars) && (str[n] != 0)); n++) buffer[n] = str[n];
+    buffer[n] = '\0';
+  }
+  return buffer;
+}
+#endif
